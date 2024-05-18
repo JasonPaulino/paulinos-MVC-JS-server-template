@@ -1,10 +1,8 @@
 import mongoose from "mongoose"
 import "dotenv/config"
 
-const databaseURL = process.env.MONGODB_CONNECTION
-
 mongoose
-  .connect(databaseURL)
+  .connect(process.env.MONGODB_CONNECTION)
   .then(() => console.log("Database connection successful"))
   .catch((err) => console.error("Database connection error:", err))
 
