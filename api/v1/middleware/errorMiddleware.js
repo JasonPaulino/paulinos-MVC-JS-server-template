@@ -1,5 +1,3 @@
-import { join } from "path"
-
 export const handleMongooseErrors = (err, req, res, next) => {
   if (err.name === "CastError") {
     res.status(400).json({ message: "Bad request: Invalid data format" })
@@ -7,7 +5,7 @@ export const handleMongooseErrors = (err, req, res, next) => {
     const errors = Object.values(err.errors).map((error) => error.message)
     res.status(400).json({ message: "Validation errors", errors })
   } else {
-    next(err) // Pass through other errors
+    next(err)
   }
 }
 
@@ -15,11 +13,11 @@ export const handleErrorStatus = (err, req, res, next) => {
   if (err.status) {
     res.status(err.status).json({ message: err.message })
   } else {
-    next(err) // Pass through errors without status code
+    next(err)
   }
 }
 
 export const handleUnexpectedErrors = (err, req, res, next) => {
-  console.error(err.stack) // Log the error for debugging
+  console.error(err.stack)
   res.status(500).json({ message: "Internal server error" })
 }

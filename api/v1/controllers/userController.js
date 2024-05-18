@@ -15,6 +15,7 @@ export const updateProfile = async (req, res) => {
     const user = await User.findByIdAndUpdate(req.user.id, req.body, {
       new: true,
     })
+    req.user = user
     res.json(user)
   } catch (error) {
     res.status(500).json({ message: error.message })

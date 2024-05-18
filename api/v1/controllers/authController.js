@@ -1,12 +1,13 @@
 import bcrypt from "bcrypt"
 import User from "../models/user.js"
 
+// Register a new user
 const register = async (req, res) => {
   try {
     const { username, password } = req.body
     const hashedPassword = await bcrypt.hash(password, 10)
     const user = new User({ username, password: hashedPassword })
-    await user.save()
+    await user.save() // Save user to database
     req.user = user
     req.session.userId = user._id
     res.status(201).send("User registered")
@@ -15,6 +16,7 @@ const register = async (req, res) => {
   }
 }
 
+// Login a user
 const login = async (req, res) => {
   try {
     const { username, password } = req.body
@@ -31,13 +33,14 @@ const login = async (req, res) => {
   }
 }
 
+// Logout a user
 const logout = (req, res) => {
   try {
     req.session.destroy((err) => {
       if (err) {
         return res.status(500).send("Failed to logout")
       }
-      res.clearCookie("connect.sid")
+      res.clearCookie("sid")
       res.send("User logged out")
     })
   } catch (error) {

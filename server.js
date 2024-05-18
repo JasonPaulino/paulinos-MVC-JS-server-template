@@ -29,10 +29,12 @@ app.get("/", (req, res) => {
   res.send("Hello World!")
 })
 
+// Error handling middleware
 app.use(handleMongooseErrors)
 app.use(handleErrorStatus)
 app.use(handleUnexpectedErrors)
 
+// Start server
 app.listen(PORT, () => {
   console.log("Server is running at port 3000")
 })
