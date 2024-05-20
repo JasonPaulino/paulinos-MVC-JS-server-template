@@ -5,12 +5,11 @@ const register = async (req, res) => {
   try {
     const { username, password } = req.body
     const hashedPassword = await bcrypt.hash(password, 10)
-    const user = new User.create({
+    const user = await User.create({
       ...req.body,
       password: hashedPassword,
     })
-    req.user = user
-    req.session.userId = user._id
+
     res.status(201).send("User registered")
   } catch (error) {
     res.status(500).send("Error registering user: " + error.message)
@@ -21,6 +20,7 @@ const login = async (req, res) => {
   try {
     const { username, password } = req.body
     const user = await User.findOne({ username })
+
     if (user && (await bcrypt.compare(password, user.password))) {
       req.user = user
       req.session.userId = user._id
