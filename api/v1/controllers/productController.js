@@ -1,11 +1,41 @@
 import Product from "../models/product.js"
+import "dotenv/config"
+import crypto from "crypto"
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
+import sharp from "sharp"
+
+const s3 = new S3Client({
+  region: process.env.BUCKET_REGION,
+  credentials: {
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY,
+  },
+})
 
 const create = async (req, res) => {
   try {
+    if (req.file) {
+      const imageName = () => crypto.randomBytes(32).toString("hex")
+      const resizedImageBuffer = await sharp(req.file.buffer)
+        .resize({ height: 1920, width: 1080, fit: "contain" })
+        .toBuffer()
+
+      const params = {
+        Bucket: process.env.BUCKET_NAME,
+        Key: imageName(),
+        Body: resizedImageBuffer,
+        ContentType: req.file.mimetype,
+      }
+
+      const commmand = new PutObjectCommand(params)
+      await s3.send(commmand)
+    }
+
     const newProduct = await Product.create({
       ...req.body,
       owner: req.user.id,
     })
+
     res.status(201).json(newProduct)
   } catch (error) {
     res.status(500).json({ message: error.message })

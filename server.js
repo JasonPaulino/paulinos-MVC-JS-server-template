@@ -11,6 +11,7 @@ import {
 import authRoute from "./api/v1/routes/authRoutes.js"
 import productRoute from "./api/v1/routes/productRoutes.js"
 import userRoute from "./api/v1/routes/userRoutes.js"
+import bodyParser from "body-parser"
 
 const app = express()
 const PORT = process.env.SERVER_PORT || 8080
@@ -18,7 +19,7 @@ const PORT = process.env.SERVER_PORT || 8080
 // Middleware
 app.use(session(sessionConfig))
 app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: true }))
 
 // Routes
 app.use("/api/v1/auth", authRoute)
