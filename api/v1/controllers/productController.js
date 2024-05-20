@@ -1,44 +1,42 @@
 import Product from "../models/product.js"
-import "dotenv/config"
-import crypto from "crypto"
+import s3 from "../../../config/s3Client.js"
 import {
-  S3Client,
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import sharp from "sharp"
-
-const s3 = new S3Client({
-  region: process.env.BUCKET_REGION,
-  credentials: {
-    accessKeyId: process.env.ACCESS_KEY,
-    secretAccessKey: process.env.SECRET_ACCESS_KEY,
-  },
-})
+import {
+  generateUniqueImageName,
+  getS3PutParams,
+  getS3GetParams,
+  getS3DeleteParams,
+} from "../../../utils/s3Utils.js"
 
 const create = async (req, res) => {
   try {
     if (req.file) {
-      const uniqueImageName = () => crypto.randomBytes(32).toString("hex")
+      const uniqueImageName = generateUniqueImageName()
       const resizedImageBuffer = await sharp(req.file.buffer)
         .resize({ height: 1920, width: 1080, fit: "contain" })
         .toBuffer()
 
-      const params = {
-        Bucket: process.env.BUCKET_NAME,
-        Key: uniqueImageName(),
-        Body: resizedImageBuffer,
-        ContentType: req.file.mimetype,
-      }
+      const params = getS3PutParams(
+        process.env.BUCKET_NAME,
+        uniqueImageName,
+        resizedImageBuffer,
+        req.file.mimetype
+      )
 
-      const commmand = new PutObjectCommand(params)
-      await s3.send(commmand)
+      const command = new PutObjectCommand(params)
+      await s3.send(command)
 
       const imageUrl = await getSignedUrl(
         s3,
-        new GetObjectCommand({ ...params })
+        new GetObjectCommand(
+          getS3GetParams(process.env.BUCKET_NAME, uniqueImageName)
+        )
       )
 
       req.body.image = imageUrl
@@ -107,10 +105,7 @@ const destroy = async (req, res) => {
       const imageUrl = new URL(product.image)
       const fileName = imageUrl.pathname.split("/").pop()
 
-      const params = {
-        Bucket: process.env.BUCKET_NAME,
-        Key: fileName,
-      }
+      const params = getS3DeleteParams(process.env.BUCKET_NAME, fileName)
 
       const command = new DeleteObjectCommand(params)
 

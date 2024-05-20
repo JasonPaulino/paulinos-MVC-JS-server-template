@@ -1,0 +1,38 @@
+api-practice
+├── .env
+├── .env.template
+├── .gitignore
+│   
+├── api
+│   └── v1
+│       ├── controllers
+│       │   ├── authController.js
+│       │   ├── productController.js
+│       │   └── userController.js
+│       ├── middleware
+│       │   ├── authMiddleware.js
+│       │   ├── errorMiddleware.js
+│       │   ├── imageUploadMiddleware.js
+│       │   └── isOwnerMiddleware.js
+│       ├── models
+│       │   ├── product.js
+│       │   └── user.js
+│       └── routes
+│           ├── authRoutes.js
+│           ├── productRoutes.js
+│           └── userRoutes.js
+├── config
+│   ├── database.js
+|   ├── session.js
+│   └── s3Client.js
+|
+├── utils
+|   └── s3Utils.js
+|
+├── node_modules
+│   
+├── package-lock.json
+├── package.json
+├── public
+├── README.md
+└── server.js
