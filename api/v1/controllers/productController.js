@@ -5,6 +5,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import sharp from "sharp"
@@ -20,14 +21,14 @@ const s3 = new S3Client({
 const create = async (req, res) => {
   try {
     if (req.file) {
-      const imageName = () => crypto.randomBytes(32).toString("hex")
+      const uniqueImageName = () => crypto.randomBytes(32).toString("hex")
       const resizedImageBuffer = await sharp(req.file.buffer)
         .resize({ height: 1920, width: 1080, fit: "contain" })
         .toBuffer()
 
       const params = {
         Bucket: process.env.BUCKET_NAME,
-        Key: imageName(),
+        Key: uniqueImageName(),
         Body: resizedImageBuffer,
         ContentType: req.file.mimetype,
       }
@@ -35,8 +36,12 @@ const create = async (req, res) => {
       const commmand = new PutObjectCommand(params)
       await s3.send(commmand)
 
-      const url = await getSignedUrl(s3, new GetObjectCommand({ ...params }))
-      req.body.image = url
+      const imageUrl = await getSignedUrl(
+        s3,
+        new GetObjectCommand({ ...params })
+      )
+
+      req.body.image = imageUrl
     }
 
     const newProduct = await Product.create({
@@ -76,14 +81,16 @@ const findOne = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { id } = req.params
-    const product = await Product.findByIdAndUpdate(id, req.body, {
-      new: true,
-    })
+    const product = await Product.findById(id)
 
     if (product === null)
       return res.status(404).json({ message: "Product not found." })
 
-    res.status(200).json(product)
+    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+      new: true,
+    })
+
+    res.status(200).json(updatedProduct)
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
@@ -92,10 +99,22 @@ const update = async (req, res) => {
 const destroy = async (req, res) => {
   try {
     const { id } = req.params
-    const product = await Product.findByIdAndDelete(id)
+    const product = await Product.findById(id)
 
     if (product === null)
       return res.status(404).json({ message: "Product not found." })
+
+    const params = {
+      Bucket: process.env.BUCKET_NAME,
+
+      // `https://${params.Bucket}.s3${regionString}.amazonaws.com/${fileName}
+      Key: product.image.split("/").pop(), // The file name is at the end of the URL after the last slash
+    }
+
+    const commmand = new DeleteObjectCommand(params)
+    await s3.send(commmand)
+
+    await Product.findByIdAndDelete(id)
 
     res.status(200).json({ message: `Successfully deleted product ${id}.` })
   } catch (error) {
