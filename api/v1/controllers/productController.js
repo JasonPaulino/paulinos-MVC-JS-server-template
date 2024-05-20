@@ -102,15 +102,20 @@ const destroy = async (req, res) => {
     if (product === null)
       return res.status(404).json({ message: "Product not found." })
 
-    const params = {
-      Bucket: process.env.BUCKET_NAME,
+    if (product.image) {
+      // Parse the URL to extract the key
+      const imageUrl = new URL(product.image)
+      const fileName = imageUrl.pathname.split("/").pop()
 
-      // `https://${params.Bucket}.s3${regionString}.amazonaws.com/${fileName}
-      Key: product.image.split("/").pop(), // The file name is at the end of the URL after the last slash
+      const params = {
+        Bucket: process.env.BUCKET_NAME,
+        Key: fileName,
+      }
+
+      const command = new DeleteObjectCommand(params)
+
+      await s3.send(command)
     }
-
-    const commmand = new DeleteObjectCommand(params)
-    await s3.send(commmand)
 
     await Product.findByIdAndDelete(id)
 
