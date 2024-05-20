@@ -1,7 +1,12 @@
 import Product from "../models/product.js"
 import "dotenv/config"
 import crypto from "crypto"
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import sharp from "sharp"
 
 const s3 = new S3Client({
@@ -29,6 +34,9 @@ const create = async (req, res) => {
 
       const commmand = new PutObjectCommand(params)
       await s3.send(commmand)
+
+      const url = await getSignedUrl(s3, new GetObjectCommand({ ...params }))
+      req.body.image = url
     }
 
     const newProduct = await Product.create({
