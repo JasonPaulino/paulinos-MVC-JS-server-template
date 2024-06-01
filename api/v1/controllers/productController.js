@@ -22,12 +22,12 @@ const create = async (req, res) => {
         .resize({ height: 1920, width: 1080, fit: "contain" })
         .toBuffer()
 
-      const params = getS3PutParams(
-        process.env.BUCKET_NAME,
-        uniqueImageName,
-        resizedImageBuffer,
-        req.file.mimetype
-      )
+      const params = getS3PutParams({
+        bucketName: process.env.BUCKET_NAME,
+        fileName: uniqueImageName,
+        fileBuffer: resizedImageBuffer,
+        mimeType: req.file.mimetype,
+      })
 
       const command = new PutObjectCommand(params)
       await s3.send(command)
@@ -35,7 +35,10 @@ const create = async (req, res) => {
       const imageUrl = await getSignedUrl(
         s3,
         new GetObjectCommand(
-          getS3GetParams(process.env.BUCKET_NAME, uniqueImageName)
+          getS3GetParams({
+            bucketName: process.env.BUCKET_NAME,
+            fileName: uniqueImageName,
+          })
         )
       )
 
@@ -105,7 +108,10 @@ const destroy = async (req, res) => {
       const imageUrl = new URL(product.image)
       const fileName = imageUrl.pathname.split("/").pop()
 
-      const params = getS3DeleteParams(process.env.BUCKET_NAME, fileName)
+      const params = getS3DeleteParams({
+        bucketName: process.env.BUCKET_NAME,
+        fileName,
+      })
 
       const command = new DeleteObjectCommand(params)
 
