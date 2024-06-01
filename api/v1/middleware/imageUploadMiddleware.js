@@ -9,7 +9,7 @@ const imageUpload = (req, res, next) => {
       console.error("Error uploading image:", err)
       res.status(500).json({ message: "Image upload failed" })
     } else {
-      next() // Continue to the next middleware or route handler
+      next()
     }
   })
 }

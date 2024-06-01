@@ -1,10 +1,10 @@
 import express from "express"
 import { getProfile, updateProfile } from "../controllers/userController.js"
-import isAuthenticated from "../middleware/authMiddleware.js"
+import hasActiveSession from "../middleware/authMiddleware.js"
 
 const router = express.Router()
 
-router.get("/profile", isAuthenticated, getProfile)
-router.patch("/updateProfile", isAuthenticated, updateProfile)
+router.get("/profile", hasActiveSession, getProfile)
+router.patch("/updateProfile", hasActiveSession, updateProfile)
 
 export default router

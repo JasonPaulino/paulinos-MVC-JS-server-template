@@ -1,6 +1,6 @@
 import User from "../models/user.js"
 
-const isAuthenticated = async (req, res, next) => {
+const hasActiveSession = async (req, res, next) => {
   if (req.session && req.session.userId) {
     req.user = await User.findById(req.session.userId)
     next()
@@ -11,4 +11,4 @@ const isAuthenticated = async (req, res, next) => {
   }
 }
 
-export default isAuthenticated
+export default hasActiveSession

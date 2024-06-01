@@ -1,28 +1,33 @@
 import express from "express"
 import productController from "../controllers/productController.js"
-import isAuthenticated from "../middleware/authMiddleware.js"
+import hasActiveSession from "../middleware/authMiddleware.js"
 import isOwner from "../middleware/isOwnerMiddleware.js"
 import imageUpload from "../middleware/imageUploadMiddleware.js"
 import Product from "../models/product.js"
 
 const router = express.Router()
 
-router.post("/products", isAuthenticated, imageUpload, productController.create)
+router.post(
+  "/products",
+  hasActiveSession,
+  imageUpload,
+  productController.create
+)
 
 router.get("/products", productController.findAll)
 
-router.get("/products/:id", isAuthenticated, productController.findOne)
+router.get("/products/:id", hasActiveSession, productController.findOne)
 
 router.patch(
   "/products/:id",
-  isAuthenticated,
+  hasActiveSession,
   isOwner(Product),
   productController.update
 )
 
 router.delete(
   "/products/:id",
-  isAuthenticated,
+  hasActiveSession,
   isOwner(Product),
   productController.destroy
 )
