@@ -1,8 +1,9 @@
-import express from "express"
+import dotenv from "dotenv"
 import mongoose from "./config/database.js"
+import express from "express"
 import session from "express-session"
+import morgan from "morgan"
 import sessionConfig from "./config/session.js"
-import "dotenv/config"
 import {
   handleErrorStatus,
   handleMongooseErrors,
@@ -13,10 +14,13 @@ import productRoute from "./api/v1/routes/productRoutes.js"
 import userRoute from "./api/v1/routes/userRoutes.js"
 import bodyParser from "body-parser"
 
+dotenv.config()
+
 const app = express()
 const PORT = process.env.SERVER_PORT || 8080
 
 // Middleware
+app.use(morgan("dev"))
 app.use(session(sessionConfig))
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }))
